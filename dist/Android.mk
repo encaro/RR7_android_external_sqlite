@@ -31,10 +31,14 @@ minimal_sqlite_flags := \
 	-DSQLITE_OMIT_LOAD_EXTENSION \
 	-DSQLITE_DEFAULT_FILE_PERMISSIONS=0600 \
 	-Dfdatasync=fdatasync
+	
+minimal_linux_flags := \
+    -DHAVE_POSIX_FALLOCATE=1 \
 
 device_sqlite_flags := $(minimal_sqlite_flags) \
     -DSQLITE_ENABLE_ICU \
     -DUSE_PREAD64 \
+    -DSQLITE_DEFAULT_SYNCHRONOUS=0 \
     -Dfdatasync=fdatasync \
     -DHAVE_MALLOC_H=1 \
     -DHAVE_MALLOC_USABLE_SIZE
@@ -47,6 +51,7 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := $(common_src_files)
 
 LOCAL_CFLAGS += $(device_sqlite_flags)
+LOCAL_CFLAGS_linux += $(minimal_linux_flags)
 
 LOCAL_SDCLANG := false
 LOCAL_CLANG := false
@@ -65,6 +70,7 @@ LOCAL_SHARED_LIBRARIES += liblog \
 
 # include android specific methods
 LOCAL_WHOLE_STATIC_LIBRARIES := libsqlite3_android
+LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)
 
 include $(BUILD_SHARED_LIBRARY)
 
@@ -73,12 +79,14 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := $(common_src_files)
 LOCAL_LDLIBS += -lpthread -ldl
 LOCAL_CFLAGS += $(minimal_sqlite_flags)
+LOCAL_CFLAGS_linux += $(minimal_linux_flags)
 LOCAL_MODULE:= libsqlite
 LOCAL_SHARED_LIBRARIES += libicuuc-host libicui18n-host
 LOCAL_STATIC_LIBRARIES := liblog libutils libcutils
 
 # include android specific methods
 LOCAL_WHOLE_STATIC_LIBRARIES := libsqlite3_android
+LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)
 include $(BUILD_HOST_SHARED_LIBRARY)
 
 ##
@@ -108,6 +116,7 @@ LOCAL_SHARED_LIBRARIES := libsqlite \
 LOCAL_STATIC_LIBRARIES := libicuandroid_utils
 
 LOCAL_CFLAGS += $(device_sqlite_flags)
+LOCAL_CFLAGS_linux += $(minimal_linux_flags)
 
 LOCAL_MODULE_PATH := $(TARGET_OUT_OPTIONAL_EXECUTABLES)
 
@@ -131,6 +140,7 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := $(common_src_files) shell.c
 LOCAL_CFLAGS += $(minimal_sqlite_flags) \
     -DNO_ANDROID_FUNCS=1
+LOCAL_CFLAGS_linux += $(minimal_linux_flags)
 
 # sqlite3MemsysAlarm uses LOG()
 LOCAL_STATIC_LIBRARIES += liblog
@@ -150,13 +160,19 @@ include $(BUILD_HOST_EXECUTABLE)
 include $(CLEAR_VARS)
 LOCAL_SRC_FILES := $(common_src_files)
 LOCAL_CFLAGS += $(minimal_sqlite_flags)
+LOCAL_CFLAGS_linux += $(minimal_linux_flags)
 LOCAL_MODULE:= libsqlite_static_minimal
 LOCAL_SDK_VERSION := 23
+LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)
+
 include $(BUILD_STATIC_LIBRARY)
 
 # Same as libsqlite_static_minimal, except that this is for the host.
 include $(CLEAR_VARS)
 LOCAL_SRC_FILES := $(common_src_files)
 LOCAL_CFLAGS += $(minimal_sqlite_flags)
+LOCAL_CFLAGS_linux += $(minimal_linux_flags)
 LOCAL_MODULE:= libsqlite_static_minimal
+LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)
+
 include $(BUILD_HOST_STATIC_LIBRARY)
